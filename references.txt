@@ -1,0 +1,8 @@
+Comparing-combining sentiment analysis techniques - https://dl.acm.org/doi/abs/10.1145/2512938.2512951
+Aspect Based Sentiment analysis (Aspect Sentiment Triplet Extraction) - https://github.com/chiayewken/Span-ASTE
+Unsupervised learning for social media - https://dl.acm.org/doi/abs/10.1145/2337542.2337551
+ABSA using NLP and unsupervised polarity classification - https://journals.sagepub.com/doi/full/10.1177/0165551515593686
+Fuzzy rules sentiment analysis with lexicon based methods - https://www.sciencedirect.com/science/article/pii/S0957417419305366
+More fuzzy sentiment detection - https://ieeexplore.ieee.org/abstract/document/9225646
+comparison of sentiwordnet, supervised, and unsupervised - https://ieeexplore.ieee.org/abstract/document/6512800
+contextual embeddings for sequence labelling - https://github.com/flairNLP/flair
