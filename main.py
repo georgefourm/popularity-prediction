@@ -1,10 +1,9 @@
-from ietfdata.mailarchive import MailArchive
 from dotenv import load_dotenv
-import os
+
+from src.data.emails import download_emails
+from src.data.documents import download_drafts
 
 load_dotenv()
 
-archive = MailArchive()
-m_list = archive.mailing_list(os.getenv("IETF_MAIL_LIST"))
-messages = m_list.messages()
-
+download_drafts("webtrans")
+download_emails("webtransport")
