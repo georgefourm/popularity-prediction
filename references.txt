@@ -6,3 +6,6 @@ Fuzzy rules sentiment analysis with lexicon based methods - https://www.scienced
 More fuzzy sentiment detection - https://ieeexplore.ieee.org/abstract/document/9225646
 comparison of sentiwordnet, supervised, and unsupervised - https://ieeexplore.ieee.org/abstract/document/6512800
 contextual embeddings for sequence labelling - https://github.com/flairNLP/flair
+k-means labeling and svm classification - https://www.tandfonline.com/doi/abs/10.1080/01969722.2018.1448242
+hybrid approach - https://ieeexplore.ieee.org/abstract/document/7383067
+https://www.tandfonline.com/doi/abs/10.1080/01969722.2018.1448242
