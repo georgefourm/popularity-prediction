@@ -1,21 +1,19 @@
 import datetime
 import os
 import time
-
-import progress
 from csv import DictWriter, DictReader
 
 from TikTokApi import TikTokApi
 
-FILE = "data/raw/songs.csv"
+DATA_FILE = "data/raw/songs.csv"
 
 
 def get_existing_songs() -> dict:
-    if not os.path.isfile(FILE):
+    if not os.path.isfile(DATA_FILE):
         return dict()
 
     ids = dict()
-    with open(FILE, mode="r", encoding='utf_8', newline='') as f:
+    with open(DATA_FILE, mode="r", encoding='utf_8', newline='') as f:
         reader = DictReader(f)
         for line in reader:
             ids[line['id']] = line
@@ -71,7 +69,7 @@ def download_new_songs(total_count, region):
 
 
 def write_songs(songs_dict):
-    with open(FILE, mode="w", encoding='utf_8', newline='') as file:
+    with open(DATA_FILE, mode="w", encoding='utf_8', newline='') as file:
         tracks = list(songs_dict.values())
         writer = DictWriter(file, list(tracks[0].keys()))
         writer.writeheader()
@@ -109,7 +107,11 @@ if __name__ == "__main__":
     threshold = 20
     wait = 10
     count = threshold + 1
+    total = 0
     while count > threshold:
-        count = download_new_songs(chunk, region='GB')
         print(f"Waiting {wait}s before attempting again")
         time.sleep(wait)
+        count = download_new_songs(chunk, region='GB')
+        total += count
+    print(f"Added a total of {total} new data points")
+    exit(0)
