@@ -19,6 +19,20 @@ def read_tracks():
     return result
 
 
+def filter_new_tracks(tracks: list[dict]) -> list[dict]:
+    existing = []
+    if not os.path.isfile(FEATURE_FILE):
+        return tracks
+
+    with open(FEATURE_FILE, mode='r', encoding='utf_8', newline='') as file:
+        reader = DictReader(file)
+        for line in reader:
+            existing.append(line['tt_id'])
+    filtered = filter(lambda item: item['id'] not in existing, tracks)
+
+    return list(filtered)
+
+
 def find_track_ids(tracks: list[dict], api: spotipy.Spotify, limit: int = None) -> dict[dict]:
     tracks_by_id = dict()
 
@@ -28,6 +42,8 @@ def find_track_ids(tracks: list[dict], api: spotipy.Spotify, limit: int = None) 
         if response['tracks']['total'] == 0:
             continue
         item = response['tracks']['items'][0]
+        # Preserve original id
+        track['tt_id'] = track['id']
         tracks_by_id[item['id']] = track
         bar.next()
         if limit is not None and bar.index == limit:
@@ -66,7 +82,7 @@ def download_features(tracks_by_id: dict[dict], api: spotipy.Spotify) -> list[di
 
 
 def write_tracks(tracks: list[dict]):
-    with open(FEATURE_FILE, mode='w', encoding='utf_8', newline='') as file:
+    with open(FEATURE_FILE, mode='a', encoding='utf_8', newline='') as file:
         writer = DictWriter(file, fieldnames=list(tracks[0].keys()))
         writer.writeheader()
         writer.writerows(tracks)
@@ -80,8 +96,13 @@ def run():
     )
     api = spotipy.Spotify(auth_manager=credentials)
     tracks = read_tracks()
-    tracks_by_id = find_track_ids(tracks, api)
+
+    new_tracks = filter_new_tracks(tracks)
+    print(f"{len(new_tracks)} new tracks found since last run")
+
+    tracks_by_id = find_track_ids(new_tracks, api)
     tracks_with_features = download_features(tracks_by_id, api)
+
     write_tracks(tracks_with_features)
 
 

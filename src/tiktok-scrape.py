@@ -3,6 +3,7 @@ import logging
 import os
 import time
 from csv import DictWriter, DictReader
+from dotenv import load_dotenv
 
 from TikTokApi import TikTokApi
 
@@ -23,11 +24,15 @@ def read_tracks() -> dict:
     return ids
 
 
-def download_new_songs(total_count, region):
+def download_new_songs(total_count: int, region: str):
+    token = os.getenv('TT_TOKEN', None)
+    device_id = os.getenv('TT_DEVICE_ID', None)
+    cookie = os.getenv('TT_COOKIE')
+
     api = TikTokApi.get_instance(
-        custom_verifyFp="verify_kugr5916_bEARXQKz_h48n_4TIT_9AOV_NR5Yc4OwJ1tU",
+        custom_verifyFp=token,
+        custom_device_id=device_id,
         logging_level=logging.INFO,
-        custom_device_id='6956918978283898373',
     )
 
     print("Checking existing tracks...")
@@ -38,7 +43,7 @@ def download_new_songs(total_count, region):
     videos = api.by_trending(
         count=total_count,
         region=region,
-        cookie='ttwid=1%7Cs2dYjOIG3Iv-PGURIzCDdaZ2YaYHYtrM-GrWA0qvAD8%7C1633623514%7Ce48059c778dc7d5e7a7719fafe87734f243b1ee0c5f80cd9245009895f21f453; tt_webid_v2=7015267501186401797; tt_webid=7015267501186401797; cookie-consent={%22ga%22:true%2C%22af%22:true%2C%22fbp%22:true%2C%22lip%22:true%2C%22version%22:%22v2%22}; R6kq3TV7=AFz93ll8AQAAbQJ6uzlV1k103YN47K7937cO0nGMz9CqSgFHBvpiu_qpPpjD|1|0|d728bf844513df2b838b6b11abd6bb95af71d8cc; tt_csrf_token=NwLWiDa3wuMNLqiET_ViEAyt'
+        cookie=cookie
     )
     duration = datetime.datetime.now() - start
     print(f"Downloaded {len(videos)} videos in {duration.seconds} seconds")
@@ -113,6 +118,7 @@ def merge_file(source_file):
 
 
 if __name__ == "__main__":
+    load_dotenv()
     chunk = 1000
     threshold = 1
     wait = 10
