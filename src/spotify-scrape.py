@@ -82,9 +82,13 @@ def download_features(tracks_by_id: dict[dict], api: spotipy.Spotify) -> list[di
 
 
 def write_tracks(tracks: list[dict]):
-    with open(FEATURE_FILE, mode='a', encoding='utf_8', newline='') as file:
+    file_exists = os.path.isfile(FEATURE_FILE)
+    mode = 'a' if file_exists else 'w'
+
+    with open(FEATURE_FILE, mode=mode, encoding='utf_8', newline='') as file:
         writer = DictWriter(file, fieldnames=list(tracks[0].keys()))
-        writer.writeheader()
+        if not file_exists:
+            writer.writeheader()
         writer.writerows(tracks)
 
 
