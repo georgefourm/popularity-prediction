@@ -1,10 +1,8 @@
-# IETF Sentiment Analysis
-This is a project that attempts to perform sentiment analysis
-on IETF mailing lists and then correlate the results with progress
-made on Internet Drafts.
+# Micro-video popularity prediction
+This repository is dedicated to popularity prediction of micro-videos on the TikTok platform,
+using the audio features extracted from non-original audio using Spotify's API.
 
-This project and its findings constitute a master's thesis.
-
-## Setup
-A MongoDB connection is required for storing the data, see the `.env-example` file for which values you need
-to add to a `.env` file at the root of the project
+## Installation
+Run `pip install` to install dependencies, then create a `.env` file as a copy of the `.env-example` file, and fill
+out the values. To get the TT_* values, open the front page of TikTok, examine the XHR requests, and retrieve
+the cookie value and device id. The token is not necessary.
