@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 from csv import DictReader, DictWriter
 from progress.bar import Bar
 
-DATA_FILE = "../data/raw/tracks.csv"
-FEATURE_FILE = "../data/interim/tracks.csv"
+DATA_FILE = "data/raw/tracks.csv"
+FEATURE_FILE = "data/interim/tracks.csv"
 
 
 def read_tracks():
