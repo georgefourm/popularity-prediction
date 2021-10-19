@@ -1,7 +1,0 @@
-Multimodal popularity prediction - https://ieeexplore.ieee.org/abstract/document/9007339
-Hit song science (2011) (Shifting Perceptron, no significant results) - http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.412.9732&rep=rep1&type=pdf
-Dance hits prediction over time (2013, Multiple models, binary classification) - https://www.tandfonline.com/doi/full/10.1080/09298215.2014.881888?needAccess=true
-Using CNNs on audio to predict popularity (2017, regression using ranking) - https://ieeexplore.ieee.org/abstract/document/7952230
-Popularity pattern prediction based on complexity features (2015, MLP, binary classification, ~60% max accuracy) - https://dl.acm.org/doi/abs/10.1145/2802558.2814645
-Popularity prediction on spotify dataset - https://program.ismir2020.net/static/lbd/ISMIR2020-LBD-433-abstract.pdf
->> >> using PCA and Decision trees, random forest and knn - https://ieeexplore.ieee.org/abstract/document/9434816
