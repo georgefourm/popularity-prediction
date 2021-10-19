@@ -125,9 +125,9 @@ if __name__ == "__main__":
     count = threshold + 1
     total = 0
     while count > threshold:
-        print(f"Waiting {wait}s before attempting again")
-        time.sleep(wait)
         count = download_new_songs(chunk, region='GB')
         total += count
+        print(f"Waiting {wait}s before attempting again")
+        time.sleep(wait)
     print(f"Added a total of {total} new tracks")
     exit(0)
