@@ -3,20 +3,17 @@ import logging
 import os
 import time
 from csv import DictWriter, DictReader
-from dotenv import load_dotenv
 
 from TikTokApi import TikTokApi
 
-DATA_FILE = "data/raw/tracks.csv"
 
-
-def read_tracks() -> dict:
-    if not os.path.isfile(DATA_FILE):
-        print("Data file not found, creating...")
+def read_tracks(file: str) -> dict:
+    if not os.path.isfile(file):
+        logging.info("Data file not found, creating...")
         return dict()
 
     ids = dict()
-    with open(DATA_FILE, mode="r", encoding='utf_8', newline='') as f:
+    with open(file, mode="r", encoding='utf_8', newline='') as f:
         reader = DictReader(f)
         for line in reader:
             ids[line['id']] = line
@@ -24,7 +21,7 @@ def read_tracks() -> dict:
     return ids
 
 
-def download_new_songs(total_count: int, region: str):
+def download_new_songs(file: str, total_count: int):
     token = os.getenv('TT_TOKEN', None)
     device_id = os.getenv('TT_DEVICE_ID', None)
     cookie = os.getenv('TT_COOKIE')
@@ -35,18 +32,17 @@ def download_new_songs(total_count: int, region: str):
         logging_level=logging.INFO,
     )
 
-    print("Checking existing tracks...")
-    all_tracks = read_tracks()
+    logging.info("Checking existing tracks...")
+    all_tracks = read_tracks(file)
 
-    print("Downloading videos...")
+    logging.info("Downloading videos...")
     start = datetime.datetime.now()
     videos = api.by_trending(
         count=total_count,
-        region=region,
         cookie=cookie
     )
     duration = datetime.datetime.now() - start
-    print(f"Downloaded {len(videos)} videos in {duration.seconds} seconds")
+    logging.info(f"Downloaded {len(videos)} videos in {duration.seconds} seconds")
 
     added = 0
     updated = 0
@@ -75,26 +71,26 @@ def download_new_songs(total_count: int, region: str):
         }
         added += 1
 
-    print(f"Found {added} new tracks, updated {updated} tracks")
+    logging.info(f"Found {added} new tracks, updated {updated} tracks")
 
     if added > 0 or updated > 0:
-        write_tracks(all_tracks)
+        write_tracks(file, all_tracks)
 
     return added
 
 
-def write_tracks(songs_dict):
-    with open(DATA_FILE, mode="w", encoding='utf_8', newline='') as file:
+def write_tracks(file, songs_dict):
+    with open(file, mode="w", encoding='utf_8', newline='') as f:
         tracks = list(songs_dict.values())
-        writer = DictWriter(file, list(tracks[0].keys()))
+        writer = DictWriter(f, list(tracks[0].keys()))
         writer.writeheader()
         writer.writerows(tracks)
 
 
-def merge_file(source_file):
-    existing = read_tracks()
+def merge_file(source_file, target_file):
+    existing = read_tracks(source_file)
     added, updated = 0, 0
-    with open(source_file, 'r', encoding='utf_8', newline='') as file:
+    with open(target_file, 'r', encoding='utf_8', newline='') as file:
         reader = DictReader(file)
         for line in reader:
             track_id = line['id']
@@ -113,21 +109,16 @@ def merge_file(source_file):
                 }
                 added += 1
 
-    write_tracks(existing)
-    print(f"Added {added} new tracks, updated {updated} tracks")
+    write_tracks(target_file, existing)
+    logging.info(f"Added {added} new tracks, updated {updated} tracks")
 
 
-if __name__ == "__main__":
-    load_dotenv()
-    chunk = 1000
-    threshold = 1
-    wait = 10
+def run(file, chunk, wait, threshold):
     count = threshold + 1
     total = 0
     while count > threshold:
-        count = download_new_songs(chunk, region='GB')
+        count = download_new_songs(file, chunk)
         total += count
-        print(f"Waiting {wait}s before attempting again")
+        logging.info(f"Waiting {wait}s before attempting again")
         time.sleep(wait)
-    print(f"Added a total of {total} new tracks")
-    exit(0)
+    logging.info(f"Added a total of {total} new tracks")

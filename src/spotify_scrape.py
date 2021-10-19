@@ -4,14 +4,12 @@ import os
 from dotenv import load_dotenv
 from csv import DictReader, DictWriter
 from progress.bar import Bar
-
-DATA_FILE = "data/raw/tracks.csv"
-FEATURE_FILE = "data/interim/tracks.csv"
+import logging
 
 
-def read_tracks():
+def read_tracks(input_file: str):
     result = []
-    with open(DATA_FILE, mode='r', encoding='utf_8', newline='') as file:
+    with open(input_file, mode='r', encoding='utf_8', newline='') as file:
         reader = DictReader(file)
         for line in reader:
             result.append(line)
@@ -19,12 +17,12 @@ def read_tracks():
     return result
 
 
-def filter_new_tracks(tracks: list[dict]) -> list[dict]:
+def filter_new_tracks(output_file: str, tracks: list[dict]) -> list[dict]:
     existing = []
-    if not os.path.isfile(FEATURE_FILE):
+    if not os.path.isfile(output_file):
         return tracks
 
-    with open(FEATURE_FILE, mode='r', encoding='utf_8', newline='') as file:
+    with open(output_file, mode='r', encoding='utf_8', newline='') as file:
         reader = DictReader(file)
         for line in reader:
             existing.append(line['tt_id'])
@@ -52,9 +50,8 @@ def find_track_ids(tracks: list[dict], api: spotipy.Spotify, limit: int = None) 
     return tracks_by_id
 
 
-def download_features(tracks_by_id: dict[dict], api: spotipy.Spotify) -> list[dict]:
+def download_features(tracks_by_id: dict[dict], api: spotipy.Spotify, chunk: int = 100) -> list[dict]:
     ids = []
-    chunk = 100
     counter = 0
     results = []
     total_written = 0
@@ -81,34 +78,30 @@ def download_features(tracks_by_id: dict[dict], api: spotipy.Spotify) -> list[di
     return results
 
 
-def write_tracks(tracks: list[dict]):
-    file_exists = os.path.isfile(FEATURE_FILE)
+def write_tracks(output_file: str, tracks: list[dict]):
+    file_exists = os.path.isfile(output_file)
     mode = 'a' if file_exists else 'w'
 
-    with open(FEATURE_FILE, mode=mode, encoding='utf_8', newline='') as file:
+    with open(output_file, mode=mode, encoding='utf_8', newline='') as file:
         writer = DictWriter(file, fieldnames=list(tracks[0].keys()))
         if not file_exists:
             writer.writeheader()
         writer.writerows(tracks)
 
 
-def run():
+def run(input_file: str, output_file: str, chunk: int):
     load_dotenv()
     credentials = SpotifyClientCredentials(
         client_id=os.getenv('SPOTIFY_CLIENT_ID'),
         client_secret=os.getenv('SPOTIFY_CLIENT_SECRET')
     )
     api = spotipy.Spotify(auth_manager=credentials)
-    tracks = read_tracks()
+    tracks = read_tracks(input_file)
 
-    new_tracks = filter_new_tracks(tracks)
-    print(f"{len(new_tracks)} new tracks found since last run")
+    new_tracks = filter_new_tracks(output_file, tracks)
+    logging.info(f"{len(new_tracks)} new tracks found since last run")
 
     tracks_by_id = find_track_ids(new_tracks, api)
-    tracks_with_features = download_features(tracks_by_id, api)
+    tracks_with_features = download_features(tracks_by_id, api, chunk)
 
-    write_tracks(tracks_with_features)
-
-
-if __name__ == "__main__":
-    run()
+    write_tracks(output_file, tracks_with_features)
