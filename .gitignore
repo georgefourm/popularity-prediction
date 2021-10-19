@@ -2,3 +2,6 @@
 venv
 .env
 .cache
+
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
