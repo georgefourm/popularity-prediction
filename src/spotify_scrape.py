@@ -42,6 +42,7 @@ def find_track_ids(tracks: list[dict], api: spotipy.Spotify, limit: int = None) 
         item = response['tracks']['items'][0]
         # Preserve original id
         track['tt_id'] = track['id']
+        track['popularity'] = item['popularity']
         tracks_by_id[item['id']] = track
         bar.next()
         if limit is not None and bar.index == limit:
