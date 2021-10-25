@@ -1,10 +1,10 @@
-import spotipy
-from spotipy.oauth2 import SpotifyClientCredentials
-import os
-from dotenv import load_dotenv
-from csv import DictReader, DictWriter
-from progress.bar import Bar
 import logging
+import os
+from csv import DictReader, DictWriter
+
+import spotipy
+from progress.bar import Bar
+from spotipy.oauth2 import SpotifyClientCredentials
 
 
 def read_tracks(input_file: str):
@@ -90,8 +90,7 @@ def write_tracks(output_file: str, tracks: list[dict]):
         writer.writerows(tracks)
 
 
-def run(input_file: str, output_file: str, chunk: int):
-    load_dotenv()
+def run(input_file: str, output_file: str, chunk: int, limit: int = None):
     credentials = SpotifyClientCredentials(
         client_id=os.getenv('SPOTIFY_CLIENT_ID'),
         client_secret=os.getenv('SPOTIFY_CLIENT_SECRET')
@@ -102,7 +101,7 @@ def run(input_file: str, output_file: str, chunk: int):
     new_tracks = filter_new_tracks(output_file, tracks)
     logging.info(f"{len(new_tracks)} new tracks found since last run")
 
-    tracks_by_id = find_track_ids(new_tracks, api)
+    tracks_by_id = find_track_ids(new_tracks, api, limit=limit)
     tracks_with_features = download_features(tracks_by_id, api, chunk)
 
     write_tracks(output_file, tracks_with_features)

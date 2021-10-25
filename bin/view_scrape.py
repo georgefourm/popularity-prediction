@@ -34,8 +34,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-v", "--verbose",
         help="Whether to enable verbose logging",
-        default=True,
-        type=bool
+        action="store_true"
     )
     args = parser.parse_args()
 

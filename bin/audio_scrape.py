@@ -6,7 +6,6 @@ from src.spotify_scrape import run
 
 if __name__ == "__main__":
     load_dotenv()
-    logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%I:%M:%S', level=logging.INFO)
 
     parser = ArgumentParser(description="Retrieve track audio features using the Spotify API")
     parser.add_argument(
@@ -25,9 +24,28 @@ if __name__ == "__main__":
         default=100,
         type=int
     )
+    parser.add_argument(
+        "-l", "--limit",
+        help="The maximum amount of tracks to download data for",
+        type=int,
+        default=None
+    )
+    parser.add_argument(
+        "-v", "--verbose",
+        help="Whether to enable verbose logging",
+        action="store_true",
+    )
     args = parser.parse_args()
+
+    logging.basicConfig(
+        format='%(asctime)s %(message)s',
+        datefmt='%I:%M:%S',
+        level=logging.INFO if args.verbose else logging.WARN
+    )
+
     run(
         input_file=args.input,
         output_file=args.output,
-        chunk=args.chunk
+        chunk=args.chunk,
+        limit=args.limit
     )
