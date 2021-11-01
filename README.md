@@ -2,10 +2,12 @@
 This repository is dedicated to popularity prediction of micro-videos on the TikTok platform,
 using the audio features extracted from non-original audio using Spotify's API.
 
-## Installation
+## Setup
 Run `pip install -r requirements.txt` to install dependencies, then create a `.env` file as a copy of the `.env-example` file, and fill
 out the values. To get the TT_* values, open the front page of TikTok, examine the XHR requests, and retrieve
-the cookie value and device id. The token is not necessary.
+the cookie value and device id from the headers of any request. For the SPOTIFY_* values, an app must be created from
+Spotify's [dashboard for developers](https://developer.spotify.com/dashboard/). The client ID and secret of this app
+is used here to access the API.
 
 ## Usage
 The data collection is a two-step process. First, the view data along with the tracks and album names are 
