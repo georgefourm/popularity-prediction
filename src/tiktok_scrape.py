@@ -4,7 +4,7 @@ import os
 import time
 from csv import DictWriter, DictReader
 
-from TikTokApi import TikTokApi
+from src.util import scrape_views
 
 
 def read_tracks(file: str) -> dict:
@@ -22,25 +22,12 @@ def read_tracks(file: str) -> dict:
 
 
 def download_new_songs(file: str, total_count: int):
-    token = os.getenv('TT_TOKEN', None)
-    device_id = os.getenv('TT_DEVICE_ID', None)
-    cookie = os.getenv('TT_COOKIE')
-
-    api = TikTokApi.get_instance(
-        custom_verifyFp=token,
-        custom_device_id=device_id,
-        logging_level=logging.INFO,
-    )
-
     logging.info("Checking existing tracks...")
     all_tracks = read_tracks(file)
 
     logging.info("Downloading videos...")
     start = datetime.datetime.now()
-    videos = api.by_trending(
-        count=total_count,
-        cookie=cookie
-    )
+    videos = scrape_views(total_count)
     duration = datetime.datetime.now() - start
     logging.info(f"Downloaded {len(videos)} videos in {duration.seconds} seconds")
 
