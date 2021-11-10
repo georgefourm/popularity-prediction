@@ -26,11 +26,11 @@ is used here to access the API.
 The data collection is a two-step process. First, the view data along with the tracks and album names are 
 downloaded from the TikTok API, and then the audio features of each track are retrieved from the Spotify API.
 
-To run the view data collection, from the root directory run `python -m bin.view_scrape`. You can use the `-h` 
+To run the view data collection, from the root directory run `python -m bin.download_views`. You can use the `-h` 
 flag to display available options. The command will run until no new tracks are encountered.
 
-To run the feature data collection, again from the root directory run `python -m bin.audio_scrape`.
+To run the feature data collection, again from the root directory run `python -m bin.download_features`.
 
 There is also a `bin.merge_views` command that can be used to merge view data files retrieved by the
-`view_scrape` command. This can be useful, for example, in a distributed setting where multiple scraping agents
+`download_views` command. This can be useful, for example, in a distributed setting where multiple scraping agents
 are launched, in order to merge results from all of them into a single file.
