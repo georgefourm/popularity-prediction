@@ -1,20 +1,12 @@
 import logging
 import os
-from csv import DictReader, DictWriter
+from csv import DictReader
 
 import spotipy
 from progress.bar import Bar
 from spotipy.oauth2 import SpotifyClientCredentials
 
-
-def read_tracks(input_file: str):
-    result = []
-    with open(input_file, mode='r', encoding='utf_8', newline='') as file:
-        reader = DictReader(file)
-        for line in reader:
-            result.append(line)
-
-    return result
+from src.util import read_tracks, write_tracks
 
 
 def filter_new_tracks(output_file: str, tracks: list[dict]) -> list[dict]:
@@ -79,24 +71,13 @@ def download_features(tracks_by_id: dict[dict], api: spotipy.Spotify, chunk: int
     return results
 
 
-def write_tracks(output_file: str, tracks: list[dict]):
-    file_exists = os.path.isfile(output_file)
-    mode = 'a' if file_exists else 'w'
-
-    with open(output_file, mode=mode, encoding='utf_8', newline='') as file:
-        writer = DictWriter(file, fieldnames=list(tracks[0].keys()))
-        if not file_exists:
-            writer.writeheader()
-        writer.writerows(tracks)
-
-
 def run(input_file: str, output_file: str, chunk: int, limit: int = None):
     credentials = SpotifyClientCredentials(
         client_id=os.getenv('SPOTIFY_CLIENT_ID'),
         client_secret=os.getenv('SPOTIFY_CLIENT_SECRET')
     )
     api = spotipy.Spotify(auth_manager=credentials)
-    tracks = read_tracks(input_file)
+    tracks = read_tracks(input_file, strict=True)
 
     new_tracks = filter_new_tracks(output_file, tracks)
     logging.info(f"{len(new_tracks)} new tracks found since last run")
@@ -104,4 +85,5 @@ def run(input_file: str, output_file: str, chunk: int, limit: int = None):
     tracks_by_id = find_track_ids(new_tracks, api, limit=limit)
     tracks_with_features = download_features(tracks_by_id, api, chunk)
 
-    write_tracks(output_file, tracks_with_features)
+    file_exists = os.path.isfile(output_file)
+    write_tracks(output_file, tracks_with_features, overwrite=not file_exists)

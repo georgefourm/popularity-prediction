@@ -2,28 +2,58 @@ import datetime
 import logging
 import os
 import time
-from csv import DictWriter, DictReader
 
-from src.util import scrape_views
+import requests
+from progress.bar import Bar
 
+from src.util import read_tracks, write_tracks
 
-def read_tracks(file: str) -> dict:
-    if not os.path.isfile(file):
-        logging.info("Data file not found, creating...")
-        return dict()
-
-    ids = dict()
-    with open(file, mode="r", encoding='utf_8', newline='') as f:
-        reader = DictReader(f)
-        for line in reader:
-            ids[line['id']] = line
-
-    return ids
+API_URL = "https://m.tiktok.com/api/recommend/item_list/"
+BATCH_LIMIT = 35  # The TikTok API returns an error on larger batch sizes
 
 
-def download_new_songs(file: str, total_count: int):
+def scrape_views(total_count: int) -> list[dict]:
+    cookie = os.getenv("TT_COOKIE")
+    token = os.getenv('TT_TOKEN', None)
+    device_id = os.getenv('TT_DEVICE_ID', None)
+
+    params = {
+        "aid": 1988,
+        "count": BATCH_LIMIT,
+        "verifyFp": token,
+        "device_id": device_id
+    }
+
+    bar = Bar("Downloading batch...", max=total_count)
+    downloaded = []
+
+    while len(downloaded) < total_count:
+        requests.head(API_URL, params=params)
+
+        headers = {
+            "cookie": cookie
+        }
+
+        response = requests.get(API_URL, params=params, headers=headers)
+
+        content = response.json()
+        items = content['itemList']
+
+        if len(items) == 0:
+            break
+
+        bar.next(len(items))
+        downloaded += items
+
+    bar.finish()
+
+    return downloaded
+
+
+def download_new_tracks(file: str, total_count: int) -> int:
     logging.info("Checking existing tracks...")
     all_tracks = read_tracks(file)
+    all_tracks = {track['id']: track for track in all_tracks}
 
     logging.info("Downloading videos...")
     start = datetime.datetime.now()
@@ -61,50 +91,16 @@ def download_new_songs(file: str, total_count: int):
     logging.info(f"Found {added} new tracks, updated {updated} tracks")
 
     if added > 0 or updated > 0:
-        write_tracks(file, all_tracks)
+        write_tracks(file, list(all_tracks.values()), overwrite=True)
 
     return added
-
-
-def write_tracks(file, songs_dict):
-    with open(file, mode="w", encoding='utf_8', newline='') as f:
-        tracks = list(songs_dict.values())
-        writer = DictWriter(f, list(tracks[0].keys()))
-        writer.writeheader()
-        writer.writerows(tracks)
-
-
-def merge_file(source_file, target_file):
-    existing = read_tracks(source_file)
-    added, updated = 0, 0
-    with open(target_file, 'r', encoding='utf_8', newline='') as file:
-        reader = DictReader(file)
-        for line in reader:
-            track_id = line['id']
-            if line['id'] in existing:
-                prev_views = existing[track_id]['views']
-                existing[track_id]['views'] = max(int(prev_views), int(line['views']))
-                existing[track_id]['videos'] = int(existing[track_id]['videos']) + 1
-                updated += 1
-            else:
-                existing[line['id']] = {
-                    'id': line['id'],
-                    "title": line['title'],
-                    'album': line['album'],
-                    'views': int(line['views']),
-                    'videos': 1
-                }
-                added += 1
-
-    write_tracks(target_file, existing)
-    logging.info(f"Added {added} new tracks, updated {updated} tracks")
 
 
 def run(file, chunk, wait, threshold):
     count = threshold + 1
     total = 0
     while count > threshold:
-        count = download_new_songs(file, chunk)
+        count = download_new_tracks(file, chunk)
         total += count
         logging.info(f"Waiting {wait}s before attempting again")
         time.sleep(wait)

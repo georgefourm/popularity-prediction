@@ -1,45 +1,26 @@
+import logging
 import os
-
-import requests
-from progress.bar import Bar
+from csv import DictReader, DictWriter
 
 
-def scrape_views(total_count: int):
-    url = "https://m.tiktok.com/api/recommend/item_list/"
-    batch_limit = 35
+def read_tracks(input_file: str, strict=False) -> list:
+    if not os.path.isfile(input_file) and not strict:
+        logging.warning("File not found: " + input_file)
+        return []
 
-    cookie = os.getenv("TT_COOKIE")
-    token = os.getenv('TT_TOKEN', None)
-    device_id = os.getenv('TT_DEVICE_ID', None)
+    result = []
+    with open(input_file, mode='r', encoding='utf_8', newline='') as file:
+        reader = DictReader(file)
+        for line in reader:
+            result.append(line)
 
-    params = {
-        "aid": 1988,
-        "count": batch_limit,
-        "verifyFp": token,
-        "device_id": device_id
-    }
+    return result
 
-    bar = Bar("Downloading batch...", max=total_count)
-    downloaded = []
 
-    while len(downloaded) < total_count:
-        requests.head(url, params=params)
-
-        headers = {
-            "cookie": cookie
-        }
-
-        response = requests.get(url, params=params, headers=headers)
-
-        content = response.json()
-        items = content['itemList']
-
-        if len(items) == 0:
-            break
-
-        bar.next(len(items))
-        downloaded += items
-
-    bar.finish()
-
-    return downloaded
+def write_tracks(output_file: str, tracks: list[dict], overwrite=True):
+    mode = 'w' if overwrite else 'a'
+    with open(output_file, mode=mode, encoding='utf_8', newline='') as file:
+        writer = DictWriter(file, fieldnames=list(tracks[0].keys()))
+        if overwrite:
+            writer.writeheader()
+        writer.writerows(tracks)
