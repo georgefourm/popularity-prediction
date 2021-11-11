@@ -9,64 +9,77 @@ from spotipy.oauth2 import SpotifyClientCredentials
 from src.util import read_tracks, write_tracks
 
 
-def filter_new_tracks(output_file: str, tracks: list[dict]) -> list[dict]:
+def update_existing_tracks(output_file: str, tracks: list[dict]) -> list[dict]:
     existing = []
+    tracks_by_id = {track['id']: track for track in tracks}
+
     if not os.path.isfile(output_file):
-        return tracks
+        return existing
 
     with open(output_file, mode='r', encoding='utf_8', newline='') as file:
         reader = DictReader(file)
         for line in reader:
-            existing.append(line['tt_id'])
-    filtered = filter(lambda item: item['id'] not in existing, tracks)
+            if line['tt_id'] in tracks_by_id:
+                track = tracks_by_id[line['tt_id']]
+                line['views'] = track['views']
+                line['videos'] = track['videos']
+            else:
+                logging.warning(f"Track ID {line['tt_id']} ({line['title']}) not found in scraped view data"
+                                f", but exists in full data. This might happen if view data was deleted/modified")
+            existing.append(line)
 
-    return list(filtered)
+    return existing
 
 
-def find_track_ids(tracks: list[dict], api: spotipy.Spotify, limit: int = None) -> dict[dict]:
-    tracks_by_id = dict()
-
+def download_track_ids(tracks: list[dict], api: spotipy.Spotify) -> list[dict]:
     bar = Bar('Downloading track ids...', max=len(tracks))
     for track in tracks:
+        bar.next()
+        # Preserve original id for duplicate checking
+        track['tt_id'] = track['id']
+
         response = api.search(q=track['title'], type='track')
         if response['tracks']['total'] == 0:
+            track['id'] = None
             continue
+
         item = response['tracks']['items'][0]
-        # Preserve original id
-        track['tt_id'] = track['id']
+        track['id'] = item['id']
+
         track['popularity'] = item['popularity']
-        tracks_by_id[item['id']] = track
-        bar.next()
-        if limit is not None and bar.index == limit:
-            break
 
-    return tracks_by_id
+    return tracks
 
 
-def download_features(tracks_by_id: dict[dict], api: spotipy.Spotify, chunk: int = 100) -> list[dict]:
-    ids = []
-    counter = 0
+def download_features(tracks: list[dict], api: spotipy.Spotify, chunk: int = 100) -> list[dict]:
+    batch = []
     results = []
-    total_written = 0
 
-    bar = Bar('Downloading track features...', max=len(tracks_by_id))
-    for track_id in tracks_by_id.keys():
-        ids.append(track_id)
-        counter += 1
-        total_written += 1
+    bar = Bar('Downloading track features...', max=len(tracks))
+    for i, track in enumerate(tracks):
+        bar.next()
 
-        if counter % chunk == 0 or len(tracks_by_id) == total_written:
+        if track['id'] is None:
+            results.append(track)
+            continue
+
+        batch.append(track)
+
+        # Download audio features per batch or when reaching the last track
+        if len(batch) % chunk == 0 or i == len(tracks) - 1:
+            ids = [item['id'] for item in batch]
             response = api.audio_features(ids)
             for idx, features in enumerate(response):
+                item = batch[idx]
+
                 if features is None:
+                    results.append(item)
                     continue
-                track = tracks_by_id[ids[idx]]
-                combined = {**track, **features}
+
+                combined = {**item, **features}
                 results.append(combined)
 
-            counter = 0
-            ids = []
-        bar.next()
+            batch = []
 
     return results
 
@@ -77,13 +90,18 @@ def run(input_file: str, output_file: str, chunk: int, limit: int = None):
         client_secret=os.getenv('SPOTIFY_CLIENT_SECRET')
     )
     api = spotipy.Spotify(auth_manager=credentials)
-    tracks = read_tracks(input_file, strict=True)
 
-    new_tracks = filter_new_tracks(output_file, tracks)
+    tracks = read_tracks(input_file, strict=True)
+    existing_tracks = update_existing_tracks(output_file, tracks)
+    existing_ids = [track['tt_id'] for track in existing_tracks]
+    new_tracks = [track for track in tracks if track['id'] not in existing_ids]
+
     logging.info(f"{len(new_tracks)} new tracks found since last run")
 
-    tracks_by_id = find_track_ids(new_tracks, api, limit=limit)
-    tracks_with_features = download_features(tracks_by_id, api, chunk)
+    if limit is not None:
+        new_tracks = new_tracks[:limit]
 
-    file_exists = os.path.isfile(output_file)
-    write_tracks(output_file, tracks_with_features, overwrite=not file_exists)
+    new_tracks = download_track_ids(new_tracks, api)
+    new_tracks = download_features(new_tracks, api, chunk)
+
+    write_tracks(output_file, existing_tracks + new_tracks, overwrite=True)
