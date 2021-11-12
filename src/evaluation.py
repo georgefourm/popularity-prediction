@@ -1,12 +1,18 @@
 import pandas as pd
-from sklearn.model_selection import cross_validate
+from sklearn.model_selection import cross_validate, StratifiedKFold
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
 
 def evaluate_model(model, metrics, data, targets):
     model = Pipeline([("std", StandardScaler()), ("estimator", model)])
-    scores = cross_validate(model, data, targets, scoring=metrics)
+    scores = cross_validate(
+        model,
+        data,
+        targets,
+        scoring=metrics,
+        cv=StratifiedKFold(shuffle=True, n_splits=5, random_state=1)  # Explicitly configure for repeatable results
+    )
     return scores
 
 
