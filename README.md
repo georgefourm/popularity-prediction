@@ -1,9 +1,20 @@
 # Micro-video popularity prediction
-This repository is dedicated to popularity prediction of micro-videos on the TikTok platform,
-using the audio features extracted from non-original audio using Spotify's API.
+This repository is dedicated to the prediction of the popularity of micro-videos on the TikTok platform,
+using the audio features extracted from non-original audio using Spotify's API. The task is modelled first 
+as a regression task, then a multiclass and then a binary classification task.
+
+## Project Structure
+The project is structured into the following top-level directories, 
+partially inspired by [Cookie Cutter Data Science](https://drivendata.github.io/cookiecutter-data-science/):
+- `src`: Code for creating/updating the dataset and evaluation code for the models
+- `bin`: The command-line interface for the code in `src`, explained in the "Usage" section below.
+- `data`: The collected data. The `raw` folder contains the track data from TikTok, and the `interim` folder contains
+the track data with the features fetched from the Spotify API. The `processed` folder contains the final dataset after
+removing missing or invalid values.
+- `notebooks`: This folder contains the exploration and modelling of the dataset using different approaches.
 
 ## Requirements
-The only requirement for this package to work is Python >= 3.9
+The only requirement for this package to work is Python >= 3.9. Using venv is suggested.
 
 ## Setup
 Run `pip install -r requirements.txt` to install dependencies, then create a `.env` file as a copy of the `.env-example` file, and fill
