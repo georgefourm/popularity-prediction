@@ -1,7 +1,7 @@
 import logging
 from argparse import ArgumentParser
 
-from src.lastfm_scrape import run
+from src.data.lastfm_scrape import run
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="Retrieve track tags using the LastFM API")

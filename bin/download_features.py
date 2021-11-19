@@ -1,7 +1,7 @@
 import logging
 from argparse import ArgumentParser
 
-from src.spotify_scrape import run
+from src.data.spotify_scrape import run
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="Retrieve track audio features using the Spotify API")

@@ -1,7 +1,7 @@
 import logging
 from argparse import ArgumentParser
 
-from src.tiktok_scrape import run
+from src.data.tiktok_scrape import run
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="Retrieve track views data by scraping the TikTok API")
