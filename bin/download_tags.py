@@ -1,32 +1,27 @@
 import logging
 from argparse import ArgumentParser
 
-from src.spotify_scrape import run
+from src.lastfm_scrape import run
 
 if __name__ == "__main__":
-    parser = ArgumentParser(description="Retrieve track audio features using the Spotify API")
+    parser = ArgumentParser(description="Retrieve track tags using the LastFM API")
     parser.add_argument(
         "-i", "--input",
-        help="The file that contains the track view data",
-        default="data/raw/tracks.csv"
+        help="The file that contains the track data",
+        default="data/processed/tracks.csv"
     )
     parser.add_argument(
         "-o", "--output",
-        help="The file that contains the track audio feature data",
-        default="data/interim/tracks.csv"
-    )
-    parser.add_argument(
-        "-c", "--chunk",
-        help="The batch size to download tracks (Spotify allows up to 100).",
-        default=100,
-        type=int
+        help="The output file to store the tags",
+        default="data/raw/tags.csv"
     )
     parser.add_argument(
         "-l", "--limit",
-        help="The maximum amount of tracks to download data for",
+        help="The amount of track tags to download",
         type=int,
         default=None
     )
+
     parser.add_argument(
         "-v", "--verbose",
         help="Whether to enable verbose logging",
@@ -43,6 +38,5 @@ if __name__ == "__main__":
     run(
         input_file=args.input,
         output_file=args.output,
-        chunk=args.chunk,
         limit=args.limit
     )

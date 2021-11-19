@@ -1,12 +1,9 @@
-from argparse import ArgumentParser
-from dotenv import load_dotenv
 import logging
+from argparse import ArgumentParser
 
 from src.tiktok_scrape import run
 
 if __name__ == "__main__":
-    load_dotenv()
-
     parser = ArgumentParser(description="Retrieve track views data by scraping the TikTok API")
     parser.add_argument(
         "-f", "--file",

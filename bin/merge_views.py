@@ -2,8 +2,6 @@ import logging
 from argparse import ArgumentParser
 from csv import DictReader
 
-from dotenv import load_dotenv
-
 from src.util import read_tracks, write_tracks
 
 
@@ -41,8 +39,6 @@ def merge_file(source_file: str, target_file: str):
 
 
 if __name__ == "__main__":
-    load_dotenv()
-
     parser = ArgumentParser(description="Merge view data files")
 
     parser.add_argument(

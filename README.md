@@ -33,6 +33,9 @@ For the `SPOTIFY_* values`, an app must be created from
 Spotify's [dashboard for developers](https://developer.spotify.com/dashboard/). The client ID and secret of this app
 is used here to access the API.
 
+Optionally, a dataset containing tags for the tracks can be downloaded from LastFM, by running `download_tags` in the 
+same manner, and using the `LASTFM_API_KEY` environment variable to access the API.
+
 ## Usage
 The data collection is a two-step process. First, the view data along with the tracks and album names are 
 downloaded from the TikTok API, and then the audio features of each track are retrieved from the Spotify API.
