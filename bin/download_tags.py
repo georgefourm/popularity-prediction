@@ -7,8 +7,8 @@ if __name__ == "__main__":
     parser = ArgumentParser(description="Retrieve track tags using the LastFM API")
     parser.add_argument(
         "-i", "--input",
-        help="The file that contains the track data",
-        default="data/processed/tracks.csv"
+        help="The file that contains the track feature data",
+        default="data/raw/features.csv"
     )
     parser.add_argument(
         "-o", "--output",

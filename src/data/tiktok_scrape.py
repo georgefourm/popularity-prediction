@@ -6,7 +6,7 @@ import time
 import requests
 from progress.bar import Bar
 
-from src.util import read_tracks, write_tracks
+from src.util import read_csv, write_csv
 
 API_URL = "https://m.tiktok.com/api/recommend/item_list/"
 BATCH_LIMIT = 35  # The TikTok API returns an error on larger batch sizes
@@ -51,8 +51,8 @@ def scrape_views(total_count: int) -> list[dict]:
 
 
 def download_new_tracks(file: str, total_count: int) -> int:
-    logging.info("Checking existing tracks...")
-    all_tracks = read_tracks(file)
+    logging.info("Checking existing data...")
+    all_tracks = read_csv(file)
     all_tracks = {track['id']: track for track in all_tracks}
 
     logging.info("Downloading videos...")
@@ -88,10 +88,10 @@ def download_new_tracks(file: str, total_count: int) -> int:
         }
         added += 1
 
-    logging.info(f"Found {added} new tracks, updated {updated} tracks")
+    logging.info(f"Found {added} new data, updated {updated} data")
 
     if added > 0 or updated > 0:
-        write_tracks(file, list(all_tracks.values()), overwrite=True)
+        write_csv(file, list(all_tracks.values()), overwrite=True)
 
     return added
 
@@ -104,4 +104,4 @@ def run(file, chunk, wait, threshold):
         total += count
         logging.info(f"Waiting {wait}s before attempting again")
         time.sleep(wait)
-    logging.info(f"Added a total of {total} new tracks")
+    logging.info(f"Added a total of {total} new data")

@@ -1,7 +1,7 @@
 import logging
 from argparse import ArgumentParser
 
-from src.data.spotify_scrape import run
+from src.data.features import FeatureDownloader
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="Retrieve track audio features using the Spotify API")
@@ -13,17 +13,17 @@ if __name__ == "__main__":
     parser.add_argument(
         "-o", "--output",
         help="The file that contains the track audio feature data",
-        default="data/interim/tracks.csv"
+        default="data/raw/features.csv"
     )
     parser.add_argument(
         "-c", "--chunk",
-        help="The batch size to download tracks (Spotify allows up to 100).",
+        help="The chunk size to write out.",
         default=100,
         type=int
     )
     parser.add_argument(
         "-l", "--limit",
-        help="The maximum amount of tracks to download data for",
+        help="The maximum amount of data points to download",
         type=int,
         default=None
     )
@@ -40,9 +40,8 @@ if __name__ == "__main__":
         level=logging.INFO if args.verbose else logging.WARN
     )
 
-    run(
-        input_file=args.input,
-        output_file=args.output,
+    downloader = FeatureDownloader(args.output, args.input)
+    downloader.run(
         chunk=args.chunk,
         limit=args.limit
     )
