@@ -1,10 +1,10 @@
 import logging
 from argparse import ArgumentParser
 
-from src.data.tiktok_scrape import run
+from src.data.tracks import TracksDownloader
 
 if __name__ == "__main__":
-    parser = ArgumentParser(description="Retrieve track views data by scraping the TikTok API")
+    parser = ArgumentParser(description="Retrieve track and views data by scraping the TikTok API")
     parser.add_argument(
         "-f", "--file",
         help="The file to write the tracks to",
@@ -14,6 +14,11 @@ if __name__ == "__main__":
         "-c", "--chunk",
         help="The amount of videos to download each iteration",
         default=1000,
+        type=int
+    )
+    parser.add_argument(
+        "-l", "--limit",
+        help="The maximum amount of total new data points to add. This may be slightly exceeded depending on chunk.",
         type=int
     )
     parser.add_argument(
@@ -41,9 +46,7 @@ if __name__ == "__main__":
         level=logging.INFO if args.verbose else logging.WARN
     )
 
-    run(
-        file=args.file,
+    downloader = TracksDownloader(args.file, threshold=args.threshold, wait=args.wait)
+    downloader.run(
         chunk=args.chunk,
-        wait=args.wait,
-        threshold=args.threshold
     )
