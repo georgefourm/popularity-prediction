@@ -74,13 +74,15 @@ class TracksDownloader(DataDownloader):
         tracks = self.tracks_by_id
 
         for video in videos:
-            track_id = video['music']['id']
-            title = video['music']['title']
-            album = video['music']['album'] if 'album' in video['music'] else ''
-            views = video['stats']['playCount']
+            music = video['music']
+            track_id = music['id']
 
-            if video['music']['original']:
+            if track_id is None or music['original']:
                 continue
+
+            title = music['title']
+            album = music['album'] if 'album' in music else ''
+            views = video['stats']['playCount']
 
             if track_id in tracks:
                 prev_views = tracks[track_id]['views']
