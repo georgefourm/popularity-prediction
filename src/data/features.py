@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Iterator
 
-import spotipy
+import spotipy, re
 from progress.bar import Bar
 from spotipy import SpotifyClientCredentials
 
@@ -10,6 +10,37 @@ from src.data.downloader import DataDownloader
 from src.util import read_csv
 
 SPOTIFY_MAX_TRACKS = 100
+PARENS_REGEX = re.compile(r"\(.*\)")
+
+
+def find_best_match(track: dict, search_results: list[dict]):
+    best_match = search_results[0]
+    best_score = 0.0
+
+    title = track['title'].lower().strip()
+    title_bare = PARENS_REGEX.sub("", title).strip()
+    album = str(track['album']).lower().strip() if track['album'] is None else None
+
+    heuristics = [
+        (lambda i: title == i['title'], 1),
+        (lambda i: (title + " ") in i['title'], .5),
+        (lambda i: title_bare == i['title'], .3),
+        (lambda i: (title_bare + " ") in i['title'], .3),
+        (lambda i: album is not None and album == i['album'], 1),
+        (lambda i: album is not None and (album + " ") in i['album'], .5)
+    ]
+
+    for result in search_results:
+        candidate = {
+            'title': result['name'].lower().strip(),
+            'album': result['album']['name'].lower().strip()
+        }
+        score = sum([heuristic[1] for heuristic in heuristics if heuristic[0](candidate)])
+        if score > best_score:
+            best_score = score
+            best_match = result
+
+    return best_match
 
 
 class FeatureDownloader(DataDownloader):
@@ -40,12 +71,16 @@ class FeatureDownloader(DataDownloader):
         for i, track in enumerate(tracks):
             bar.next()
 
-            search_results = self.api.search(q=track['title'], type='track')
+            search_results = self.api.search(q=track['title'], type='track', limit=50)
 
             if search_results['tracks']['total'] == 0:
                 continue
 
-            item = search_results['tracks']['items'][0]
+            item = find_best_match(track, search_results['tracks']['items'])
+
+            if item is None:
+                continue
+
             batch.append({
                 'id': item['id'],
                 'tt_id': track['id'],  # Keep ID for cross-reference
