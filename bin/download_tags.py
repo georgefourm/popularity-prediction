@@ -27,6 +27,12 @@ if __name__ == "__main__":
         type=int,
         default=None
     )
+    parser.add_argument(
+        "-w", "--wait",
+        help="The wait interval between requests, in seconds",
+        type=int,
+        default=5
+    )
 
     parser.add_argument(
         "-v", "--verbose",
@@ -41,7 +47,7 @@ if __name__ == "__main__":
         level=logging.INFO if args.verbose else logging.WARN
     )
 
-    downloader = TagDownloader(args.output, args.input)
+    downloader = TagDownloader(args.output, args.input, args.wait)
     downloader.run(
         limit=args.limit,
         chunk=args.chunk

@@ -8,8 +8,8 @@ The project is structured into the following top-level directories,
 partially inspired by [Cookie Cutter Data Science](https://drivendata.github.io/cookiecutter-data-science/):
 - `src`: Code for creating/updating the dataset and evaluation code for the models
 - `bin`: The command-line interface for the code in `src`, explained in the "Usage" section below.
-- `data`: The collected data. The `raw` folder contains the track data from TikTok, and the `interim` folder contains
-the track data with the features fetched from the Spotify API. The `processed` folder contains the final dataset after
+- `data`: The collected data. The `raw` folder contains the track and view data from TikTok, and the track data 
+with the features fetched from the Spotify API. The `processed` folder contains the final dataset after
 removing missing or invalid values.
 - `notebooks`: This folder contains the exploration and modelling of the dataset using different approaches.
 
@@ -34,7 +34,8 @@ Spotify's [dashboard for developers](https://developer.spotify.com/dashboard/). 
 is used here to access the API.
 
 Optionally, a dataset containing tags for the tracks can be downloaded from LastFM, by running `download_tags` in the 
-same manner, and using the `LASTFM_API_KEY` environment variable to access the API.
+same manner, and using the `LASTFM_API_KEY` environment variable to access the API. There are usage limits to be aware
+of, but exact values are not specified in the documentation.    
 
 ## Usage
 The data collection is a two-step process. First, the view data along with the tracks and album names are 

@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import time
 from typing import Iterator
 
 import requests
@@ -12,8 +13,9 @@ from src.util import read_csv
 
 class TagDownloader(DataDownloader):
 
-    def __init__(self, output_file: str, features_file: str):
+    def __init__(self, output_file: str, features_file: str, wait: int = 5):
         super().__init__(output_file)
+        self.wait_secs = wait
 
         tracks = read_csv(features_file, strict=True)
         tags = read_csv(self.output_file, strict=False)
@@ -36,6 +38,8 @@ class TagDownloader(DataDownloader):
 
         bar = Bar(message="Downloading tags", max=len(tracks))
         for track in tracks:
+            time.sleep(self.wait_secs)
+
             response = requests.get(url, params={
                 **common_params,
                 'method': 'track.search',
@@ -44,8 +48,10 @@ class TagDownloader(DataDownloader):
             })
             info = response.json()
             track_matches = info['results']['trackmatches']
+
             if 'track' not in track_matches or len(track_matches['track']) == 0:
                 continue
+
             track_info = track_matches['track'][0]
 
             tag_info = requests.get(url, params={
