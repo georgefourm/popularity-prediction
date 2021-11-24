@@ -2,14 +2,13 @@ import pandas as pd
 from sklearn.model_selection import cross_validate, StratifiedKFold, KFold
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.utils.multiclass import type_of_target
 
 
-def evaluate_model(model, metrics, data, targets):
+def evaluate_model(model, metrics, data, targets, regression=False):
     model = Pipeline([("std", StandardScaler()), ("estimator", model)])
 
     # Explicitly configure for repeatable results
-    if type_of_target(targets) == "continuous":
+    if regression:
         cv = KFold(shuffle=True, random_state=1)
     else:
         cv = StratifiedKFold(shuffle=True, n_splits=5, random_state=1)
@@ -24,11 +23,11 @@ def evaluate_model(model, metrics, data, targets):
     return scores
 
 
-def compare_models(models, metrics, data, targets):
+def compare_models(models, metrics, data, targets, regression=False):
     comparison = dict()
     for name, model in models:
         print("Evaluating " + name)
-        scores = evaluate_model(model, metrics, data, targets)
+        scores = evaluate_model(model, metrics, data, targets, regression)
         table = pd.DataFrame(scores.values(), columns=scores.keys())
         comparison[name] = table
 
