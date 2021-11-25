@@ -1,14 +1,14 @@
 import logging
 from argparse import ArgumentParser
 
-from src.data.lastfm_scrape import run
+from src.data.tags import TagDownloader
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="Retrieve track tags using the LastFM API")
     parser.add_argument(
         "-i", "--input",
-        help="The file that contains the track data",
-        default="data/processed/tracks.csv"
+        help="The file that contains the track feature data",
+        default="data/raw/features.csv"
     )
     parser.add_argument(
         "-o", "--output",
@@ -16,10 +16,22 @@ if __name__ == "__main__":
         default="data/raw/tags.csv"
     )
     parser.add_argument(
+        "-c", "--chunk",
+        help="The chunk size to write out.",
+        default=100,
+        type=int
+    )
+    parser.add_argument(
         "-l", "--limit",
         help="The amount of track tags to download",
         type=int,
         default=None
+    )
+    parser.add_argument(
+        "-w", "--wait",
+        help="The wait interval between requests, in seconds",
+        type=int,
+        default=5
     )
 
     parser.add_argument(
@@ -35,8 +47,8 @@ if __name__ == "__main__":
         level=logging.INFO if args.verbose else logging.WARN
     )
 
-    run(
-        input_file=args.input,
-        output_file=args.output,
-        limit=args.limit
+    downloader = TagDownloader(args.output, args.input, args.wait)
+    downloader.run(
+        limit=args.limit,
+        chunk=args.chunk
     )

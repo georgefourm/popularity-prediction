@@ -2,7 +2,7 @@ import logging
 from argparse import ArgumentParser
 from csv import DictReader
 
-from src.util import read_tracks, write_tracks
+from src.util import read_csv, write_csv
 
 
 def merge_file(source_file: str, target_file: str):
@@ -12,7 +12,7 @@ def merge_file(source_file: str, target_file: str):
     :param target_file:
     :return:
     """
-    existing = read_tracks(source_file)
+    existing = read_csv(source_file)
     existing = {track['id']: track for track in existing}
     added, updated = 0, 0
     with open(target_file, 'r', encoding='utf_8', newline='') as file:
@@ -34,7 +34,7 @@ def merge_file(source_file: str, target_file: str):
                 }
                 added += 1
 
-    write_tracks(target_file, list(existing.values()), overwrite=True)
+    write_csv(target_file, list(existing.values()), overwrite=True)
     logging.info(f"Added {added} new tracks, updated {updated} tracks")
 
 
